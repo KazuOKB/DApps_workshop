@@ -1,0 +1,9 @@
+[package]
+name = "nft_sample"
+version = "0.0.1"
+edition = "2024.beta"
+
+[addresses]
+nft_sample = "0x0"
+
+[dependencies]
