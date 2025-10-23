@@ -1,6 +1,7 @@
 import { ConnectButton } from "@mysten/dapp-kit";
 import { Box, Container, Flex, Heading } from "@radix-ui/themes";
 import { WalletStatus } from "./WalletStatus";
+import { MintButton } from "./MintButton";
 
 function App() {
   return (
@@ -30,6 +31,7 @@ function App() {
           style={{ background: "var(--gray-a2)", minHeight: 500 }}
         >
           <WalletStatus />
+          <MintButton />
         </Container>
       </Container>
     </>
