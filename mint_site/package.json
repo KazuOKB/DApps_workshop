@@ -7,7 +7,9 @@
     "dev": "vite",
     "build": "tsc && vite build",
     "lint": "eslint . --report-unused-disable-directives --max-warnings 0",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "format": "prettier --write \"src/**/*.{ts,tsx,js,jsx,css,html}\"",
+    "format:check": "prettier --check \"src/**/*.{ts,tsx,js,jsx,css,html}\""
   },
   "dependencies": {
     "@mysten/dapp-kit": "0.19.6",

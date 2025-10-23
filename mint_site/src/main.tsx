@@ -24,7 +24,7 @@ type NetworkType = (typeof validNetworks)[number];
 
 // ネットワーク名が有効かチェックする型ガード関数
 function isValidNetwork(value: string): value is NetworkType {
-  return validNetworks.includes(value as NetworkType);
+    return validNetworks.includes(value as NetworkType);
 }
 
 // 環境変数が有効な値かチェックし、無効な場合はtestnetにフォールバック
@@ -32,24 +32,24 @@ const defaultNetwork = isValidNetwork(network) ? network : "testnet";
 
 // 開発時の警告：無効なネットワーク設定の場合
 if (!isValidNetwork(network)) {
-  console.warn(
-    `Invalid VITE_NETWORK: "${network}". Using "testnet" as fallback.`,
-  );
+    console.warn(
+        `Invalid VITE_NETWORK: "${network}". Using "testnet" as fallback.`,
+    );
 }
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
-  <React.StrictMode>
-    <Theme appearance="dark">
-      <QueryClientProvider client={queryClient}>
-        <SuiClientProvider
-          networks={networkConfig}
-          defaultNetwork={defaultNetwork}
-        >
-          <WalletProvider autoConnect>
-            <App />
-          </WalletProvider>
-        </SuiClientProvider>
-      </QueryClientProvider>
-    </Theme>
-  </React.StrictMode>,
+    <React.StrictMode>
+        <Theme appearance="dark">
+            <QueryClientProvider client={queryClient}>
+                <SuiClientProvider
+                    networks={networkConfig}
+                    defaultNetwork={defaultNetwork}
+                >
+                    <WalletProvider autoConnect>
+                        <App />
+                    </WalletProvider>
+                </SuiClientProvider>
+            </QueryClientProvider>
+        </Theme>
+    </React.StrictMode>,
 );
