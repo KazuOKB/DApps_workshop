@@ -150,7 +150,11 @@ export function MintButton() {
       // ]
       tx.moveCall({
         target: `${packageId}::${moduleName}::${functionName}`,
-        arguments: [], // 引数が必要な場合はここに追加
+        arguments: [
+          tx.pure.string("Build on Sui NFT"),
+          tx.pure.string("NFT created at Build on Sui at Chapter 4"),
+          tx.pure.string("https://www.1-firststep.com/wp-content/uploads/2016/12/unko-lime.png"),
+        ],
       });
 
       // -----------------------------------------------------------------------
