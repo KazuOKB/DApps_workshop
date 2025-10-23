@@ -91,6 +91,10 @@ export function MintButton() {
   // モジュール内の実行する関数名
   const functionName = import.meta.env.VITE_FUNCTION_NAME;
 
+  // 接続先ネットワーク（mainnet/testnet/devnet）
+  // Suiscanリンクで使用するネットワーク名
+  const network = import.meta.env.VITE_NETWORK || "testnet";
+
   // ===========================================================================
   // 環境変数のバリデーション
   // ===========================================================================
@@ -261,11 +265,11 @@ export function MintButton() {
               Suiscan: Suiブロックチェーンのエクスプローラー
               トランザクションの詳細情報を確認できます
 
-              注意: testnet/devnet/mainnetを環境に合わせて変更してください
+              ネットワークは.envファイルのVITE_NETWORKから自動的に設定されます
             */}
             <Text size="2">
               <a
-                href={`https://suiscan.xyz/testnet/tx/${digest}`}
+                href={`https://suiscan.xyz/${network}/tx/${digest}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 style={{ color: "var(--accent-9)" }}
