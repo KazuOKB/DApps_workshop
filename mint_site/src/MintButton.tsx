@@ -171,7 +171,7 @@ export function MintButton() {
             // - digest: トランザクションの一意な識別子（ハッシュ値）
             // - effects: トランザクションの実行結果
             //
-            // 公式ドキュメント: https://sdk.mystenlabs.com/dapp-kit/hooks/useSignAndExecuteTransaction
+            // 公式ドキュメント: https://sdk.mystenlabs.com/dapp-kit/wallet-hooks/useSignAndExecuteTransaction
             signAndExecuteTransaction(
                 {
                     transaction: tx,
@@ -238,12 +238,12 @@ export function MintButton() {
             <Flex direction="column" gap="2">
                 {/* Mintボタン */}
                 {/*
-          disabled属性:
-          - ウォレット未接続時
-          - 環境変数未設定時
-          - トランザクション実行中
-          のいずれかでボタンが無効化されます
-        */}
+                    disabled属性:
+                    - ウォレット未接続時
+                    - 環境変数未設定時
+                    - トランザクション実行中
+                    のいずれかでボタンが無効化されます
+                */}
                 <Button onClick={handleMint} disabled={isDisabled} size="3">
                     {isPending ? "Minting..." : "Mint NFT"}
                 </Button>
@@ -263,19 +263,19 @@ export function MintButton() {
                             ✅ Mint successful!
                         </Text>
                         {/*
-              トランザクションdigest（ハッシュ値）を表示
-              digestは64文字の16進数文字列です
-            */}
+                            トランザクションdigest（ハッシュ値）を表示
+                            digestは64文字の16進数文字列です
+                        */}
                         <Text size="2" style={{ wordBreak: "break-all" }}>
                             Transaction: {digest}
                         </Text>
                         {/*
-              Suiscanへのリンク
-              Suiscan: Suiブロックチェーンのエクスプローラー
-              トランザクションの詳細情報を確認できます
+                            Suiscanへのリンク
+                            Suiscan: Suiブロックチェーンのエクスプローラー
+                            トランザクションの詳細情報を確認できます
 
-              ネットワークは.envファイルのVITE_NETWORKから自動的に設定されます
-            */}
+                            ネットワークは.envファイルのVITE_NETWORKから自動的に設定されます
+                        */}
                         <Text size="2">
                             <a
                                 href={`https://suiscan.xyz/${network}/tx/${digest}`}
