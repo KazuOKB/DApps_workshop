@@ -1,35 +1,40 @@
-# Sui dApp Starter Template
+# Mint dApp 完成版（お手本リポジトリ）
 
-This dApp was created using `@mysten/create-dapp` that sets up a basic React
-Client dApp using the following tools:
+このフォルダは Chapter 4 ワークショップの完成形サンプルです。ワークショップ用の課題フォルダ `mint_site_workshop/` で詰まったときに、画面構成・ディレクトリ構造・実装コードの正解例として参照してください。
 
-- [React](https://react.dev/) as the UI framework
-- [TypeScript](https://www.typescriptlang.org/) for type checking
-- [Vite](https://vitejs.dev/) for build tooling
-- [Radix UI](https://www.radix-ui.com/) for pre-built UI components
-- [ESLint](https://eslint.org/)
-- [`@mysten/dapp-kit`](https://sdk.mystenlabs.com/dapp-kit) for connecting to
-  wallets and loading data
-- [pnpm](https://pnpm.io/) for package management
+## プロジェクト概要
+- フレームワーク: React + TypeScript + Vite
+- UI ライブラリ: Radix UI
+- Sui 連携: `@mysten/dapp-kit`
+- 主なコンポーネント: `App`, `WalletStatus`, `MintButton`
+- Move コントラクトと連動し、ウォレット接続および NFT のミントが可能
 
-## Starting your dApp
+## ファイル構成
+- `src/` — フロントエンドの実装本体
+  - `App.tsx` — 画面全体のレイアウト
+  - `WalletStatus.tsx` — ウォレット接続状況の表示
+  - `MintButton.tsx` — NFT ミント処理の完成版
+- `.env` — ワークショップで使用するサンプル設定（パッケージ ID など）が記入済み
+- `vite.config.mts` / `tsconfig.json` など — Vite / TypeScript の設定
 
-To install dependencies you can run
+## 使い方
+1. Dev Container が起動すると、`pnpm` と依存関係は自動でセットアップされています。
+2. 動作確認を行う際は、プロジェクト直下で開発サーバーを起動してください。
+   ```bash
+   pnpm dev
+   ```
+3. ブラウザで表示し、ウォレット接続や NFT ミントの挙動を確認します。
+4. ビルド確認をしたい場合は下記コマンドを利用できます。
+   ```bash
+   pnpm build
+   ```
 
-```bash
-pnpm install
-```
+## ワークショップ参加者へのヒント
+- 課題用フォルダ `mint_site_workshop/` とファイルを比較しながら、自分の実装との差分を確認しましょう。
+- `MintButton.tsx` や `WalletStatus.tsx` などは段階的に未完成パーツが用意されています。行き詰まったら、この完成版の同ファイルを見て挙動の意図を理解してください。
+- `.env` の設定例もこのフォルダに含まれています。自分のフォルダに取り込む際は、必ず自分で Publish したパッケージ ID へ置き換えてください。
 
-To start your dApp in development mode run
+## 関連リポジトリ
+- `mint_site_workshop/` — 参加者が自力で完成させるための演習用プロジェクト。
 
-```bash
-pnpm dev
-```
-
-## Building
-
-To build your app for deployment you can run
-
-```bash
-pnpm build
-```
+このサンプルをガイドとして活用しながら、ワークショップ課題をクリアしていきましょう。
