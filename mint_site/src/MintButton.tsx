@@ -4,14 +4,9 @@
 // Sui公式が提供するdApp開発用のReact Hooksライブラリ
 // 公式ドキュメント: https://sdk.mystenlabs.com/dapp-kit
 import {
-    // useCurrentAccount: 接続中のウォレットアカウント情報を取得するHook
-    // - 戻り値: ウォレットが接続されている場合はアカウント情報、未接続の場合はnull
+    // 接続中のウォレットアカウント情報を取得
     useCurrentAccount,
-
-    // useSignAndExecuteTransaction: トランザクションに署名してSuiネットワークに送信するHook
-    // - 戻り値: { mutate, isPending, isSuccess, isError, data, error }
-    //   - mutate: トランザクション実行関数
-    //   - isPending: 実行中かどうかのフラグ
+    // トランザクションに署名してSuiネットワークに送信
     useSignAndExecuteTransaction,
 } from "@mysten/dapp-kit";
 
