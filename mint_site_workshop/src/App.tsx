@@ -37,7 +37,7 @@ function App() {
             >
                 <Box>
                     {/* タイトル（アプリ名）。ワークショップなら自由に変更OK */}
-                    <Heading>dApp Starter Template</Heading>
+                    <Heading>My DApps Website</Heading>
                 </Box>
 
                 <Box>

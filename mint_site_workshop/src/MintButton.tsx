@@ -127,9 +127,16 @@ export function MintButton() {
             //       `${packageId}::${moduleName}::${functionName}` を呼び出し、
             //       NFTの名前・説明・画像URLを文字列引数として渡してください。
             //       実装できたら下の `throw` を削除して先に進みましょう。
-            throw new Error(
-                "TODO: moveCall を追加して NFT をミントしてください（README の課題3を参照）。",
-            );
+            tx.moveCall({
+                target: `${packageId}::${moduleName}::${functionName}`,
+                arguments: [
+                    tx.pure.string("Build on Sui NFT"),
+                    tx.pure.string("NFT created at Build on Sui at Chapter 4"),
+                    tx.pure.string(
+                        "https://www.1-firststep.com/wp-content/uploads/2016/12/unko-lime.png",
+                    ),
+                ],
+            });
 
             // -----------------------------------------------------------------------
             // ステップ3: トランザクションに署名して実行
