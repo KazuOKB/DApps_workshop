@@ -27,6 +27,12 @@ import { Button, Container, Flex, Heading, Text, Box } from "@radix-ui/themes";
 // =============================================================================
 import { useState } from "react";
 
+// =============================================================================
+// MintButton が src 直下にある前提で画像インポート
+// =============================================================================
+import nftImage from "./assets/saboten_genki.png";   // これで“URL文字列”として解決される
+
+
 /**
  * MintButton コンポーネント
  *
@@ -108,7 +114,9 @@ export function MintButton() {
     // ===========================================================================
     const nftName = "Build on Sui NFT";
     const nftDesc = "NFT created at Build on Sui";
-    const nftImageUrl = "https://www.1-firststep.com/wp-content/uploads/2016/12/unko-lime.png";
+    const nftImageUrl = nftImage;
+
+//    <img src={nftImageUrl} alt="NFT" />
 
     // ===========================================================================
     // UI sizing constants 

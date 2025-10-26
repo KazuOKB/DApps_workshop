@@ -31,6 +31,10 @@ lerna-debug.log*
 *.sln
 *.sw?
 
+# Images or files you don't want to commit
+/src/assets/
+
+
 # Testing
 coverage/
 
