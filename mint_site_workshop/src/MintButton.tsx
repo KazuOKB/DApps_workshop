@@ -20,7 +20,7 @@ import { Transaction } from "@mysten/sui/transactions";
 // =============================================================================
 // UI Components (Radix UI)
 // =============================================================================
-import { Button, Container, Flex, Heading, Text } from "@radix-ui/themes";
+import { Button, Container, Flex, Heading, Text, Box } from "@radix-ui/themes";
 
 // =============================================================================
 // React Hooks
@@ -104,6 +104,19 @@ export function MintButton() {
             "0x0000000000000000000000000000000000000000000000000000000000000000";
 
     // ===========================================================================
+    // ミント予定メタデータ
+    // ===========================================================================
+    const nftName = "Build on Sui NFT";
+    const nftDesc = "NFT created at Build on Sui";
+    const nftImageUrl = "https://www.1-firststep.com/wp-content/uploads/2016/12/unko-lime.png";
+
+    // ===========================================================================
+    // UI sizing constants 
+    // ===========================================================================
+    const PREVIEW_WIDTH = 240;   // px: ボタン & 画像の共通幅
+    const PREVIEW_HEIGHT = 220;   // px: 画像の高さ（固定にしたい場合）
+
+    // ===========================================================================
     // Mint実行ハンドラー
     // ===========================================================================
     const handleMint = () => {
@@ -130,11 +143,9 @@ export function MintButton() {
             tx.moveCall({
                 target: `${packageId}::${moduleName}::${functionName}`,
                 arguments: [
-                    tx.pure.string("Build on Sui NFT"),
-                    tx.pure.string("NFT created at Build on Sui at Chapter 4"),
-                    tx.pure.string(
-                        "https://www.1-firststep.com/wp-content/uploads/2016/12/unko-lime.png",
-                    ),
+                    tx.pure.string(nftName),
+                    tx.pure.string(nftDesc),
+                    tx.pure.string(nftImageUrl),
                 ],
             });
 
@@ -214,25 +225,59 @@ export function MintButton() {
                 </Flex>
             )}
 
-            <Flex direction="column" gap="2">
-                {/* Mintボタン */}
-                {/*
-                    disabled属性:
-                    - ウォレット未接続時
-                    - 環境変数未設定時
-                    - トランザクション実行中
-                    のいずれかでボタンが無効化されます
-                */}
-                <Button onClick={handleMint} disabled={isDisabled} size="3">
-                    {isPending ? "Minting..." : "Mint NFT"}
-                </Button>
+            <Flex direction="column" gap="2" align="center">
+                {/* ▼ 共通ラッパー：ここで幅を固定（または最大幅に） */}
+                <Box style={{ width: PREVIEW_WIDTH, maxWidth: "100%", margin: "0 auto", }}>
+                    {/* Mintボタン */}
+                    {/*
+                        disabled属性:
+                        - ウォレット未接続時
+                        - 環境変数未設定時
+                        - トランザクション実行中
+                        のいずれかでボタンが無効化されます
+                    */}
+                    <Button 
+                        onClick={handleMint} 
+                        disabled={isDisabled} 
+                        // 高さ設定.横幅は style で合わせる
+                        size="3"                
+                        // ラッパーの幅にフィット＝画像と同じ横幅
+                        style={{ width: "80%", display: "block", margin: "0 auto" }}
+                    >
+                        {isPending ? "Minting..." : "Mint NFT"}
+                    </Button>
 
-                {/* ウォレット未接続時のメッセージ */}
-                {!account && (
-                    <Text size="2" color="gray">
-                        Please connect your wallet to mint
-                    </Text>
-                )}
+                    {/* ウォレット未接続時のメッセージ */}
+                    {!account && (
+                        <Text size="2" color="gray" mt="1">
+                            Please connect your wallet to mint
+                        </Text>
+                    )}
+
+                    {/* ▼ 追加：ボタン直下のプレビュー */}
+                    {nftImageUrl ? (
+                        <Box 
+                            mt="2" p="2" 
+                            style={{ border: "1px solid var(--gray-6)", borderRadius: 12, 
+                            }}
+                        >
+                            <img 
+                                src={nftImageUrl}
+                                alt="NFT preview"          
+                                referrerPolicy="no-referrer"  // 外部サイトのホットリンク対策
+                                style={{ 
+                                    display: "block", 
+                                    width: "100%", // ラッパー幅にフィット
+                                    height: "auto", 
+                                    objectFit: "cover", 
+                                    borderRadius: 8, 
+                                    }}
+                            />  
+                        </Box>
+                    ) : (
+                        <Text color="gray">画像プレビューはここに表示されます</Text>
+                    )}
+                </Box>
 
                 {/* トランザクション成功時の表示 */}
                 {/* digestが存在する場合のみ表示されます */}
