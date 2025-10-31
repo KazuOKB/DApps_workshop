@@ -28,12 +28,149 @@ import { Button, Container, Flex, Heading, Text, Box } from "@radix-ui/themes";
 import { useState } from "react";
 
 // =============================================================================
-// MintButton が src 直下にある前提で画像インポート
+// NFTメタデータ（名前・説明・画像URL）
 // =============================================================================
+type NftItem = { nftName: string; nftDesc: string; nftImageUrl: string };
+
+// MintButton が src 直下にある前提で画像インポート
 import nftImage from "./assets/saboten_genki.png";   // これで“URL文字列”として解決される
 
+// ===========================================================================
+// UI sizing constants 
+// ===========================================================================
+const PREVIEW_WIDTH = 240;   // px: ボタン & 画像の共通幅
+//const PREVIEW_HEIGHT = 220;   // px: 画像の高さ（固定にしたい場合）
 
-/**
+// =============================================================================
+// 1枚分のカード（プレビュー＋Mint）
+// =============================================================================
+function NftCard({
+    item,        // 1枚分のデータ { name, desc, imageUrl }
+    pkg,         // 例: 0x...（package id）
+    mod,         // 例: "nft"
+    func,        // 例: "mint"
+    network,     // 表示用（Suiscan リンクなどで使う）
+    isConfigured // .env が正しく設定されているか
+}: {
+    item: NftItem;
+    pkg: string; 
+    mod: string; 
+    func: string;
+    network: string;
+    isConfigured: boolean;
+}) {
+    const account = useCurrentAccount();
+    const { mutate: signAndExecuteTransaction, isPending } = useSignAndExecuteTransaction();
+    const [digest, setDigest] = useState("");
+    const [error, setError] = useState("");
+
+
+    // ===========================================================================
+    // ボタンの無効化条件
+    // ===========================================================================
+    const isDisabled = !account || !isConfigured || isPending;
+    // 以下のいずれかに該当する場合、Mintボタンを無効化します：
+    // 1. ウォレットが接続されていない（account が null）
+    // 2. 環境変数が正しく設定されていない（isConfigured が false）
+    // 3. トランザクション実行中（isPending が true）
+
+    // ===========================================================================
+    // Mint実行ハンドラー
+    // ===========================================================================
+    const handleMint = () => {
+        setError("");
+        setDigest("");
+
+        const tx = new Transaction();
+        tx.moveCall({
+            target: `${pkg}::${mod}::${func}`,
+            arguments: [
+                tx.pure.string(item.nftName),
+                tx.pure.string(item.nftDesc),
+                tx.pure.string(item.nftImageUrl), 
+            ],
+        });
+
+        signAndExecuteTransaction(
+            { transaction: tx },
+            {
+                onSuccess: (r) => setDigest(r.digest),
+                onError: (e: any) => setError(e?.message || "Transaction failed"),
+            },
+        );
+    };
+
+    return (
+        <Box style={{ width: PREVIEW_WIDTH }}>
+            <Button
+                onClick={handleMint}
+                disabled={isDisabled}
+                size="3"
+                style={{ width: "80%", display: "block", margin: "0 auto" }}
+            >
+                {isPending ? "Minting..." : "Mint NFT"}
+            </Button>
+
+            {!account && (
+                <Text size="2" color="gray" mt="1">
+                Please connect your wallet to mint
+                </Text>
+            )}
+
+            <Box mt="2" p="2" style={{ border: "1px solid var(--gray-6)", borderRadius: 12 }}>
+                <img
+                    src={item.nftImageUrl}
+                    alt="NFT preview"
+                    referrerPolicy="no-referrer"
+                    style={{
+                        display: "block",
+                        width: "100%",
+                        height: "auto",      // 比率維持
+                        objectFit: "contain",
+                        borderRadius: 8,
+                    }}
+                    onError={(e) => {
+                    const img = e.currentTarget as HTMLImageElement;
+                    img.style.objectFit = "contain";
+                    // もし代替画像に切り替えたい場合（任意）:
+                    // import fallbackPng from "./assets/fallback.png";
+                    // img.src = fallbackPng;
+                    }}
+                />
+            </Box>
+
+            <Text as="div" size="4" weight="bold" mt="2" align="center">{item.nftName}</Text>
+            {/* <Text size="1" color="gray">{item.nftDesc}</Text> */}
+
+            {digest && (
+                <Box mt="2">
+                    <Text color="green" weight="bold">✅ Mint successful!</Text>
+                    <Text size="2" style={{ wordBreak: "break-all" }}>Tx: {digest}</Text>
+                    <Text size="2">
+                        <a
+                            href={`https://suiscan.xyz/${network}/tx/${digest}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            style={{ color: "var(--accent-9)" }}
+                        >
+                            View on Suiscan →
+                        </a>
+                    </Text>
+                </Box>
+            )}
+
+            {error && (
+                <Text color="red" size="2" mt="1">❌ Error: {error}</Text>
+            )}
+        </Box>
+    );
+}
+
+
+// =============================================================================
+// 複数のカードを並べる親（配列 → map） 
+// =============================================================================
+/*
  * MintButton コンポーネント
  *
  * NFTをmintするためのボタンとUI状態管理を提供します。
@@ -44,45 +181,6 @@ import nftImage from "./assets/saboten_genki.png";   // これで“URL文字列
  * 4. 実行結果の表示（成功時はdigest、失敗時はエラーメッセージ）
  */
 export function MintButton() {
-    // ===========================================================================
-    // Sui dApp Kit Hooks
-    // ===========================================================================
-
-    // 【Hook 1】現在接続されているウォレットアカウント情報を取得
-    // - ウォレット未接続の場合: null
-    // - ウォレット接続済みの場合: { address, publicKey, chains, features } などの情報
-    const account = useCurrentAccount();
-
-    // 【Hook 2】トランザクション実行用のHook
-    // - mutate: トランザクションを実行する関数（signAndExecuteTransactionという名前で使用）
-    // - isPending: トランザクション実行中かどうかを示すフラグ
-    const { mutate: signAndExecuteTransaction, isPending } =
-        useSignAndExecuteTransaction();
-
-    // ===========================================================================
-    // ローカル状態管理（React useState）
-    // ===========================================================================
-
-    // トランザクション成功時のdigest（トランザクションの一意な識別子・ハッシュ値）を保存
-    // digestを使ってSuiscanなどのエクスプローラーでトランザクション詳細を確認できます
-    const [digest, setDigest] = useState<string>("");
-
-    // トランザクション失敗時のエラーメッセージを保存
-    const [error, setError] = useState<string>("");
-
-    // ===========================================================================
-    // 環境変数の読み込み
-    // ===========================================================================
-    // 【重要】Viteの環境変数システム
-    // - Viteでは環境変数に `VITE_` プレフィックスが必要です
-    // - import.meta.env 経由でアクセスします
-    // - .envファイルに設定した値がここで読み込まれます
-    //
-    // 設定例（.envファイル）:
-    // VITE_PACKAGE_ID=0x1234...
-    // VITE_MODULE_NAME=nft
-    // VITE_FUNCTION_NAME=mint
-
     // スマートコントラクトが配置されているパッケージのID（0xから始まる64文字のアドレス）
     const packageId = import.meta.env.VITE_PACKAGE_ID;
 
@@ -112,106 +210,24 @@ export function MintButton() {
     // ===========================================================================
     // ミント予定メタデータ
     // ===========================================================================
-    const nftName = "Build on Sui NFT";
-    const nftDesc = "NFT created at Build on Sui";
-    const nftImageUrl = nftImage;
+    const nftItems: NftItem[] = [
+        {
+            nftName: "元気だったサボテン",
+            nftDesc: "NFT created at Build on Sui",
+            nftImageUrl: "https://aggregator.walrus-testnet.walrus.space/v1/blobs/by-object-id/0xf7edb13af9e188ff939115b6ab49e4390724ae0087939b46387cd05e5f6032f4",
+        },
+        {
+            nftName: "練習画像",
+            nftDesc: "NFT created at Build on Sui",
+            nftImageUrl: "https://www.1-firststep.com/wp-content/uploads/2016/12/unko-lime.png",
+        },
+        {
+            nftName: "元気だったサボテン (Localなのでこれはnftにできない)",
+            nftDesc: "Local preview",
+            nftImageUrl: nftImage,
+        },
+    ];
 
-//    <img src={nftImageUrl} alt="NFT" />
-
-    // ===========================================================================
-    // UI sizing constants 
-    // ===========================================================================
-    const PREVIEW_WIDTH = 240;   // px: ボタン & 画像の共通幅
-    const PREVIEW_HEIGHT = 220;   // px: 画像の高さ（固定にしたい場合）
-
-    // ===========================================================================
-    // Mint実行ハンドラー
-    // ===========================================================================
-    const handleMint = () => {
-        // 前回の実行結果をクリア
-        setError("");
-        setDigest("");
-
-        try {
-            // -----------------------------------------------------------------------
-            // ステップ1: トランザクションの構築
-            // -----------------------------------------------------------------------
-            // 【重要】Transaction クラス
-            // Suiブロックチェーン上で実行される操作を構築します
-            // 公式ドキュメント: https://sdk.mystenlabs.com/typescript/transaction-building/basics
-            const tx = new Transaction();
-
-            // -----------------------------------------------------------------------
-            // ステップ2: Move関数の呼び出しを追加
-            // -----------------------------------------------------------------------
-            // TODO: READMEの課題3を参考に、ここで tx.moveCall(...) を使って
-            //       `${packageId}::${moduleName}::${functionName}` を呼び出し、
-            //       NFTの名前・説明・画像URLを文字列引数として渡してください。
-            //       実装できたら下の `throw` を削除して先に進みましょう。
-            tx.moveCall({
-                target: `${packageId}::${moduleName}::${functionName}`,
-                arguments: [
-                    tx.pure.string(nftName),
-                    tx.pure.string(nftDesc),
-                    tx.pure.string(nftImageUrl),
-                ],
-            });
-
-            // -----------------------------------------------------------------------
-            // ステップ3: トランザクションに署名して実行
-            // -----------------------------------------------------------------------
-            // 【重要】signAndExecuteTransaction 関数
-            // 1. ユーザーのウォレットでトランザクションに署名を求める
-            // 2. 署名後、Suiネットワークにトランザクションを送信
-            // 3. トランザクションの実行完了を待つ
-            //
-            // 戻り値（onSuccessで受け取る）:
-            // - digest: トランザクションの一意な識別子（ハッシュ値）
-            // - effects: トランザクションの実行結果
-            //
-            // 公式ドキュメント: https://sdk.mystenlabs.com/dapp-kit/wallet-hooks/useSignAndExecuteTransaction
-            signAndExecuteTransaction(
-                {
-                    transaction: tx,
-                },
-                {
-                    // 成功時のコールバック
-                    // result には { digest, effects } が含まれます
-                    onSuccess: (result) => {
-                        console.log("Transaction successful:", result);
-                        // digestを保存してUIに表示
-                        setDigest(result.digest);
-                        setError("");
-                    },
-
-                    // 失敗時のコールバック
-                    // ユーザーが署名を拒否した場合やネットワークエラーなどで呼ばれます
-                    onError: (err) => {
-                        console.error("Transaction failed:", err);
-                        setError(err.message || "Transaction failed");
-                        setDigest("");
-                    },
-                },
-            );
-        } catch (err) {
-            // トランザクション構築時のエラーをキャッチ
-            console.error("Error building transaction:", err);
-            setError(
-                err instanceof Error
-                    ? err.message
-                    : "Error building transaction",
-            );
-        }
-    };
-
-    // ===========================================================================
-    // ボタンの無効化条件
-    // ===========================================================================
-    // 以下のいずれかに該当する場合、Mintボタンを無効化します：
-    // 1. ウォレットが接続されていない（account が null）
-    // 2. 環境変数が正しく設定されていない（isConfigured が false）
-    // 3. トランザクション実行中（isPending が true）
-    const isDisabled = !account || !isConfigured || isPending;
 
     // ===========================================================================
     // UIレンダリング
@@ -233,100 +249,19 @@ export function MintButton() {
                 </Flex>
             )}
 
-            <Flex direction="column" gap="2" align="center">
-                {/* ▼ 共通ラッパー：ここで幅を固定（または最大幅に） */}
-                <Box style={{ width: PREVIEW_WIDTH, maxWidth: "100%", margin: "0 auto", }}>
-                    {/* Mintボタン */}
-                    {/*
-                        disabled属性:
-                        - ウォレット未接続時
-                        - 環境変数未設定時
-                        - トランザクション実行中
-                        のいずれかでボタンが無効化されます
-                    */}
-                    <Button 
-                        onClick={handleMint} 
-                        disabled={isDisabled} 
-                        // 高さ設定.横幅は style で合わせる
-                        size="3"                
-                        // ラッパーの幅にフィット＝画像と同じ横幅
-                        style={{ width: "80%", display: "block", margin: "0 auto" }}
-                    >
-                        {isPending ? "Minting..." : "Mint NFT"}
-                    </Button>
-
-                    {/* ウォレット未接続時のメッセージ */}
-                    {!account && (
-                        <Text size="2" color="gray" mt="1">
-                            Please connect your wallet to mint
-                        </Text>
-                    )}
-
-                    {/* ▼ 追加：ボタン直下のプレビュー */}
-                    {nftImageUrl ? (
-                        <Box 
-                            mt="2" p="2" 
-                            style={{ border: "1px solid var(--gray-6)", borderRadius: 12, 
-                            }}
-                        >
-                            <img 
-                                src={nftImageUrl}
-                                alt="NFT preview"          
-                                referrerPolicy="no-referrer"  // 外部サイトのホットリンク対策
-                                style={{ 
-                                    display: "block", 
-                                    width: "100%", // ラッパー幅にフィット
-                                    height: "auto", 
-                                    objectFit: "cover", 
-                                    borderRadius: 8, 
-                                    }}
-                            />  
-                        </Box>
-                    ) : (
-                        <Text color="gray">画像プレビューはここに表示されます</Text>
-                    )}
-                </Box>
-
-                {/* トランザクション成功時の表示 */}
-                {/* digestが存在する場合のみ表示されます */}
-                {digest && (
-                    <Flex direction="column" gap="1">
-                        <Text color="green" weight="bold">
-                            ✅ Mint successful!
-                        </Text>
-                        {/*
-                            トランザクションdigest（ハッシュ値）を表示
-                            digestは64文字の16進数文字列です
-                        */}
-                        <Text size="2" style={{ wordBreak: "break-all" }}>
-                            Transaction: {digest}
-                        </Text>
-                        {/*
-                            Suiscanへのリンク
-                            Suiscan: Suiブロックチェーンのエクスプローラー
-                            トランザクションの詳細情報を確認できます
-
-                            ネットワークは.envファイルのVITE_NETWORKから自動的に設定されます
-                        */}
-                        <Text size="2">
-                            <a
-                                href={`https://suiscan.xyz/${network}/tx/${digest}`}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                style={{ color: "var(--accent-9)" }}
-                            >
-                                View on Suiscan →
-                            </a>
-                        </Text>
-                    </Flex>
-                )}
-
-                {/* トランザクション失敗時のエラーメッセージ */}
-                {error && (
-                    <Text color="red" size="2">
-                        ❌ Error: {error}
-                    </Text>
-                )}
+            {/* ここでカードを複数並べるだけ */}
+            <Flex wrap="wrap" gap="5" justify="center">
+                {nftItems.map((item, i) => (
+                    <NftCard
+                        key={i}
+                        item={item}
+                        pkg={packageId}
+                        mod={moduleName}
+                        func={functionName}
+                        network={network}
+                        isConfigured={isConfigured}
+                    />
+                ))}
             </Flex>
         </Container>
     );
