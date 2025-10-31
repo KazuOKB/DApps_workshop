@@ -33,7 +33,14 @@ import { useState } from "react";
 type NftItem = { nftName: string; nftDesc: string; nftImageUrl: string };
 
 // MintButton が src 直下にある前提で画像インポート
-import nftImage from "./assets/saboten_genki.png";   // これで“URL文字列”として解決される
+import nftSabotenKareta from "./assets/saboten_kareta.png";
+import nftGejigeji from "./assets/yc_gejigeji.png";
+import nftNejineji0 from "./assets/yc_nejineji0.png";
+import nftNejineji1 from "./assets/yc_nejineji1.png";
+import nftSquare0 from "./assets/yc_square0.png";   
+import nftSquare1 from "./assets/yc_square1.png";
+
+
 
 // ===========================================================================
 // UI sizing constants 
@@ -94,8 +101,15 @@ function NftCard({
         signAndExecuteTransaction(
             { transaction: tx },
             {
-                onSuccess: (r) => setDigest(r.digest),
-                onError: (e: any) => setError(e?.message || "Transaction failed"),
+                //onSuccess: (r) => setDigest(r.digest),
+                //onError: (e: any) => setError(e?.message || "Transaction failed"),
+                onSuccess: (r) => setDigest(r.digest), // ← ここはそのままでもOK（型が厳しければ as any）
+                onError: (e: unknown) => {
+                    const msg = e instanceof Error ? e.message :
+                    typeof e === 'string' ? e :
+                    JSON.stringify(e);
+                setError(msg || "Transaction failed");
+                },
             },
         );
     };
@@ -200,12 +214,13 @@ export function MintButton() {
     // 環境変数が正しく設定されているかをチェック
     // - 全ての値が存在すること
     // - packageIdがダミー値（0x0000...）でないこと
-    const isConfigured =
+    const isConfigured = Boolean(
         packageId &&
         moduleName &&
         functionName &&
         packageId !==
-            "0x0000000000000000000000000000000000000000000000000000000000000000";
+            "0x0000000000000000000000000000000000000000000000000000000000000000"
+    );
 
     // ===========================================================================
     // ミント予定メタデータ
@@ -217,14 +232,34 @@ export function MintButton() {
             nftImageUrl: "https://aggregator.walrus-testnet.walrus.space/v1/blobs/by-object-id/0xf7edb13af9e188ff939115b6ab49e4390724ae0087939b46387cd05e5f6032f4",
         },
         {
-            nftName: "練習画像",
+            nftName: "枯れたサボテン",
             nftDesc: "NFT created at Build on Sui",
-            nftImageUrl: "https://www.1-firststep.com/wp-content/uploads/2016/12/unko-lime.png",
+            nftImageUrl: nftSabotenKareta,
         },
         {
-            nftName: "元気だったサボテン (Localなのでこれはnftにできない)",
+            nftName: "YC Gejigeji",
             nftDesc: "Local preview",
-            nftImageUrl: nftImage,
+            nftImageUrl: nftGejigeji,
+        },
+        {
+            nftName: "YC Nejineji",
+            nftDesc: "NFT created at Build on Sui",
+            nftImageUrl: nftNejineji0,
+        },
+        {
+            nftName: "YC Nejineji",
+            nftDesc: "NFT created at Build on Sui",
+            nftImageUrl: nftNejineji1,
+        },
+        {
+            nftName: "YC Square",
+            nftDesc: "NFT created at Build on Sui",
+            nftImageUrl: nftSquare0,
+        },
+        {
+            nftName: "YC Square",
+            nftDesc: "NFT created at Build on Sui",
+            nftImageUrl: nftSquare1,
         },
     ];
 
